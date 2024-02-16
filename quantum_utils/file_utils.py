@@ -38,16 +38,25 @@ def extract_info_from_h5(filepath):
 def append_to_h5(filepath, data_dict):
     with h5py.File(filepath, "a") as f:
         for key, val in data_dict.items():
-            f[key].resize(
-                f[key].shape[0] + 1, axis=0
-            )
+            f[key].resize(f[key].shape[0] + 1, axis=0)
             f[key][-1] = val
 
 
-def write_to_h5(filepath, data_dict, param_dict):
+def write_to_h5_multi(filepath, data_dict, param_dict):
     with h5py.File(filepath, "a") as f:
         for key, val in data_dict.items():
             f.create_dataset(key, data=[val], chunks=True, maxshape=(None, *val.shape))
+        for kwarg in param_dict.keys():
+            try:
+                f.attrs[kwarg] = param_dict[kwarg]
+            except TypeError:
+                f.attrs[kwarg] = str(param_dict[kwarg])
+
+
+def write_to_h5(filepath, data_dict, param_dict):
+    with h5py.File(filepath, "w") as f:
+        for key, val in data_dict.items():
+            f.create_dataset(key, data=val)
         for kwarg in param_dict.keys():
             try:
                 f.attrs[kwarg] = param_dict[kwarg]
