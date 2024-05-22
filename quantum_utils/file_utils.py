@@ -3,6 +3,8 @@ import glob
 import os
 import h5py
 import pathos
+import numpy as np
+import itertools
 
 
 def generate_file_path(extension, file_name, path):
@@ -85,3 +87,54 @@ def get_map(num_cpus: int = 1):
     if num_cpus == 1:
         return map
     return pathos.pools.ProcessPool(nodes=num_cpus).map
+
+
+def param_map(f, parameters, map_fun=map, dtype=object):
+    """
+    Code due to Peter Groszkowski
+    Maps function `f` over the product of the parameters given in `parameters`
+    (which is assumed to have a list-of-lists-like structure). The returned data
+    is an ndarray with dimensions set by the input data in `parameters`.
+
+    e.g.:
+
+    input_data_a=['1','2','3']
+    input_data_b=['a','b']
+
+    def f(a, b):
+        return "{}{}".format(a,b)
+
+    data=param_map(f, [input_data_a, input_data_b], map_fun=map)
+
+    print(data.shape) #gives (3,2)
+    print(data[0,0]) #gives '1a'
+
+
+    Parameters
+    ----------
+    f:  function
+        Function that is to be applied to each element of an array
+    parameters: iterable of iterables (i.e. list of lists)
+
+
+    Returns
+    -------
+    ndarray with f applied to products of input parameters
+
+    """
+    dims_list = [len(i) for i in parameters]
+    total_dim = np.prod(dims_list)
+
+    # all the possible combinations of input parameters
+    parameters_prod = tuple(itertools.product(*parameters))
+
+    # We want to force a 1d numpy array of size total_dim,
+    # regardless what 'data' is, even if it's iterable
+    # (list, sequence, etc), but by default, the np.array()
+    # constructor will try to create new array dimensions
+    # from objects that can be indexed (sequences, list, etc).
+    data = np.empty(total_dim, dtype=dtype)
+    for i, d in enumerate(map_fun(f, parameters_prod)):
+        data[i] = d
+
+    return np.reshape(data, dims_list)
