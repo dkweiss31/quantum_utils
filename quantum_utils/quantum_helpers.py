@@ -92,6 +92,17 @@ def project_U(
         return Qobj(new_U)
 
 
+def all_X_Y_Z_states(basis_states):
+    all_states = []
+    for idx_1, state_1 in enumerate(basis_states):
+        all_states.append(state_1)
+        for idx_2, state_2 in enumerate(basis_states):
+            if idx_2 > idx_1:
+                all_states.append((state_1 + state_2).unit())
+                all_states.append((state_1 + 1j * state_2).unit())
+    return all_states
+
+
 def truncate_superoperator(superop, keep_idxs):
     """
     Parameters
