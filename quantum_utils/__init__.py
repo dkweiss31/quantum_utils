@@ -19,6 +19,7 @@ from quantum_utils.file_utils import (
     parallel_map,
     get_map,
     param_map,
+    unpack_param_map
 )
 
 __all__ = [
@@ -39,4 +40,6 @@ __all__ = [
     update_data_in_h5,
     parallel_map,
     get_map,
+    param_map,
+    unpack_param_map,
 ]

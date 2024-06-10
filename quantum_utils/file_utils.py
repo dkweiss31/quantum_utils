@@ -138,3 +138,17 @@ def param_map(f, parameters, map_fun=map, dtype=object):
         data[i] = d
 
     return np.reshape(data, dims_list)
+
+
+def unpack_param_map(param_map_array):
+    """assumption is that array is of dtype=object (output of param_map) and stores
+    in each entry an array that we want to pack onto the end"""
+    dims = param_map_array.shape
+    zero_idx = [0] * len(dims)
+    inner_dim = param_map_array[tuple(zero_idx)].shape
+    result = np.empty((dims + inner_dim), dtype=param_map_array.dtype)
+    idx_ranges = [range(dim) for dim in dims]
+    idx_prod = itertools.product(*idx_ranges)
+    for idxs in idx_prod:
+        result[tuple(idxs)] = param_map_array[tuple(idxs)]
+    return result
